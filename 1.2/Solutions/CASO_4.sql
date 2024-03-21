@@ -22,7 +22,8 @@ BEGIN
         FECHA_DEVOLUCION
     INTO v_fecha_ini_arriendo, v_dias_solicitados, v_fecha_devolucion
     FROM ARRIENDO_CAMION
-    WHERE NRO_PATENTE = :b_patente AND TO_CHAR(FECHA_INI_ARRIENDO, 'MM') = TO_CHAR(v_mes_ant, 'MM');
+    WHERE NRO_PATENTE = :b_patente AND TO_CHAR(FECHA_INI_ARRIENDO, 'MM') = TO_CHAR(v_mes_ant, 'MM')
+    AND FECHA_DEVOLUCION - DIAS_SOLICITADOS > fecha_ini_arriendo;
 
     v_dias_retraso := v_fecha_devolucion - (v_fecha_ini_arriendo + v_dias_solicitados);
     v_multa := v_dias_retraso * :b_multa;
@@ -33,14 +34,12 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Fecha Devolucion: ' || v_fecha_devolucion);
     DBMS_OUTPUT.PUT_LINE('Dias Retraso: ' || v_dias_retraso);
     DBMS_OUTPUT.PUT_LINE('Multa: ' || v_multa);
-
-
+    
+    INSERT INTO MULTA_ARRIENDO VALUES(TO_CHAR(v_mes_ant, 'YYYYMM'), :b_patente, v_fecha_ini_arriendo, v_dias_solicitados, v_fecha_devolucion, v_dias_retraso, v_multa);
+    commit;
 end;
 
 
-SELECT NUMRUN_CLI,
-        fecha_ini_arriendo,
-        DIAS_SOLICITADOS,
-        FECHA_DEVOLUCION
-    FROM ARRIENDO_CAMION
-    WHERE NRO_PATENTE = :b_patente AND TO_CHAR(FECHA_INI_ARRIENDO, 'MM') = TO_CHAR( ADD_MONTHS(SYSDATE, -1), 'MM');
+SELECT * FROM MULTA_ARRIENDO;
+
+
